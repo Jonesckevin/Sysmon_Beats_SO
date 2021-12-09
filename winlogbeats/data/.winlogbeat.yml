@@ -1,0 +1,26 @@
+update_time: 2021-08-12T23:45:50.52693Z
+event_logs:
+- name: Application
+  record_number: 10381
+  timestamp: 2021-08-12T23:28:01.9468905Z
+  bookmark: "<BookmarkList>\r\n  <Bookmark Channel='Application' RecordId='10381' IsCurrent='true'/>\r\n</BookmarkList>"
+- name: Microsoft-Windows-PowerShell/Operational
+  record_number: 1957
+  timestamp: 2021-08-09T16:30:00.9277836Z
+  bookmark: "<BookmarkList>\r\n  <Bookmark Channel='Microsoft-Windows-PowerShell/Operational' RecordId='1957' IsCurrent='true'/>\r\n</BookmarkList>"
+- name: Microsoft-Windows-Sysmon/Operational
+  record_number: 1056389
+  timestamp: 2021-08-12T23:45:48.6108912Z
+  bookmark: "<BookmarkList>\r\n  <Bookmark Channel='Microsoft-Windows-Sysmon/Operational' RecordId='1056389' IsCurrent='true'/>\r\n</BookmarkList>"
+- name: Security
+  record_number: 263100
+  timestamp: 2021-08-12T23:43:28.1072688Z
+  bookmark: "<BookmarkList>\r\n  <Bookmark Channel='Security' RecordId='263100' IsCurrent='true'/>\r\n</BookmarkList>"
+- name: System
+  record_number: 16181
+  timestamp: 2021-08-12T23:45:28.3277382Z
+  bookmark: "<BookmarkList>\r\n  <Bookmark Channel='System' RecordId='16181' IsCurrent='true'/>\r\n</BookmarkList>"
+- name: Windows PowerShell
+  record_number: 3078
+  timestamp: 2021-08-12T23:17:11.9960786Z
+  bookmark: "<BookmarkList>\r\n  <Bookmark Channel='Windows PowerShell' RecordId='3078' IsCurrent='true'/>\r\n</BookmarkList>"

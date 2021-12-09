@@ -1,0 +1,13 @@
+output.elasticsearch:
+  hosts: ["https://yourexternalurl:9200"]
+  api_key: userpart:passpart
+  ssl.certificate_authorities:
+  - /etc/filebeat/elastic.crt
+filebeat.inputs:
+  - type: docker
+    containers.ids: '*'
+    processors:
+    - add_docker_metadata: ~
+
+
+

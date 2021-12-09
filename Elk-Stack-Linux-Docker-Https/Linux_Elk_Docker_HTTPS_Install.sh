@@ -7,6 +7,8 @@
 #
 #Place the "elastic-kibana-docker.tar.gz" onto your desktop and navigate to your Whereever / $USER/Desktop -- Should help. Also you need to have Docker and Docker-compose already installed.
 #
+#Sudo this darn file. Tends to work better.
+
 
 #Go Get the elastic-docker.tar.gz from Drive
 
@@ -18,6 +20,25 @@ ts='tput setaf'
 #Unpack
 #cd elastic folder
 #change ip in instances.yml from external to local_ip
+
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+sudo echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update -y && sudo apt upgrade
+sudo apt-get install curl
+sudo apt-get install apt-transport-https
+sudo apt-get install ca-certificates
+sudo apt-get install gnupg
+sudo apt-get install lsb-release
+sudo apt-get install containerd
+sudo apt-get install docker-ce
+sudo apt-get docker-ce-cli
+sudo apt-get containerd.io
+sudo apt-get install docker-compose
+sudo apt install -y pip python3-pip build-essential libssl-dev libffi-dev python3-setuptools
+
+
 #
     (( ec++ )) || true && (( sc++ )) || true && $ts "${sc}"; echo "EchoCount '${ec}' - Go Metabee! - pull the dockers"
 sudo docker-compose pull #gets the images
@@ -63,17 +84,13 @@ sudo docker-compose up -d
 (( ec++ )) || true && (( sc++ )) || true && echo " Go Metabee! - Now that this comes up, you should be done. Go to https://localhost:5601 ..."
 #
 #Sources-If-Needed
-#wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
-#sudo echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
-#curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-#echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-#
-#sudo apt update -y && sudo apt upgrade
+
 
 ##Reset
-#sudo docker-compose down
-#sudo docker system prune --all #y
-#sudo docker volume prune #y
+sudo docker-compose down
+sudo docker system prune --all
+sudo docker volume prune
+
 
 
 #filebeats

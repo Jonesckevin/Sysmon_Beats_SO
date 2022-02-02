@@ -3,21 +3,11 @@
 ### File List:
 ||- Version - |
 |:--|:-:|
-|[Sysmon](https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon) | 13.30 | 
+|[Sysmon](https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon) | 13.32 | 
 |[WinLogBeats](https://www.elastic.co/downloads/beats/winlogbeat) | 7.13.4 | 
 |[Security Onion](https://github.com/Security-Onion-Solutions/securityonion/blob/master/VERIFY_ISO.md) | 2.3.90 |
 |Splunk | TBC  |
 
-### File List:
-| || Hash |
-| :--|:--|--:|
-|1|Eula.txt (For sysmon) | 1 | 
-|2|README.MD  | 1 |  
-|3|SysConfig.xml  | 1 |  
-|4|SysConfig-Swift-Blank.xml  | 1 |  
-|5|Sysmon.exe  | 1 |  
-|6|Sysmon64.exe  | 1 |  
-|7|SysMonIcon.ico  | 1 | 
 
 ### Instructions To Install
 **Step 1:** Get Admin Credentials

@@ -1,18 +1,13 @@
-<Sysmon schemaversion="4.50">
-	<HashAlgorithms>md5,sha256,IMPHASH</HashAlgorithms> 
-	<CheckRevocation/>
-
-	<!-- <ImageLoad/> --> <!-- Would manually force-on ImageLoad monitoring, even without configuration below. Included only documentation. -->
-	<!-- <ProcessAccessConfig/> --> <!-- Would manually force-on ProcessAccess monitoring, even without configuration below. Included only documentation. -->
-	<!-- <PipeMonitoringConfig/> --> <!-- Would manually force-on PipeCreated / PipeConnected events, even without configuration below. Included only documentation. -->
-	<!-- <ArchiveDirectory> -->
+<Sysmon schemaversion="4.81">
+	<!--SYSMON META CONFIG-->
+	<HashAlgorithms>*</HashAlgorithms> <!-- Both MD5 and SHA256 are the industry-standard algorithms. Remove IMPHASH if you do not use DLL import fingerprinting. -->
 
 	<EventFiltering>
 
 	<!--SYSMON EVENT ID 1 : PROCESS CREATION [ProcessCreate]-->
+		<!--DATA: UtcTime, ProcessGuid, ProcessID, Image, FileVersion, Description, Product, Company, CommandLine, CurrentDirectory, User, LogonGuid, LogonId, TerminalSessionId, IntegrityLevel, Hashes, ParentProcessGuid, ParentProcessId, ParentImage, ParentCommandLine, RuleName-->
 	<RuleGroup name="" groupRelation="or">
 		<ProcessCreate onmatch="exclude">
-            <!--SECTION: Microsoft Windows-->
 			<CommandLine condition="begin with"> "C:\Windows\system32\wermgr.exe" "-queuereporting_svc" </CommandLine> <!--Windows:Windows error reporting/telemetry-->
 			<CommandLine condition="begin with">C:\Windows\system32\DllHost.exe /Processid</CommandLine> <!--Windows-->
 			<CommandLine condition="begin with">C:\Windows\system32\wbem\wmiprvse.exe -Embedding</CommandLine> <!--Windows: WMI provider host-->
@@ -128,7 +123,7 @@
 			<ParentCommandLine condition="is">C:\Windows\system32\svchost.exe -k netsvcs</ParentCommandLine> <!--Windows: Network services: Spawns Consent.exe-->
 			<ParentCommandLine condition="is">C:\Windows\system32\svchost.exe -k localSystemNetworkRestricted</ParentCommandLine> <!--Windows-->
 			<CommandLine condition="is">C:\Windows\system32\deviceenroller.exe /c /AutoEnrollMDM</CommandLine> <!--Windows: AzureAD device enrollment agent-->
-			<!--SECTION: Microsoft:Edge-->
+						<!--SECTION: Microsoft:Edge-->
 			<CommandLine condition="begin with">"C:\Program Files (x86)\Microsoft\Edge Dev\Application\msedge.exe" --type=</CommandLine>
 			<!--SECTION: Microsoft:dotNet-->
 			<CommandLine condition="begin with">C:\Windows\Microsoft.NET\Framework\v4.0.30319\ngen.exe</CommandLine> <!--Microsoft:DotNet-->
@@ -158,29 +153,26 @@
 			<!--SECTION: Google-->
 			<CommandLine condition="begin with">"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --type=</CommandLine> <!--Google:Chrome: massive command-line arguments-->
 			<CommandLine condition="begin with">"C:\Program Files\Google\Chrome\Application\chrome.exe" --type=</CommandLine> <!--Google:Chrome: massive command-line arguments-->
-
 		</ProcessCreate>
 	</RuleGroup>
 	
 	<!--SYSMON EVENT ID 2 : FILE CREATION TIME RETROACTIVELY CHANGED IN THE FILESYSTEM [FileCreateTime]-->
+		<!--DATA: UtcTime, ProcessGuid, ProcessId, Image, TargetFilename, CreationUtcTime, PreviousCreationUtcTime-->
 	<RuleGroup name="" groupRelation="or">
 		<FileCreateTime onmatch="include">
-        	<Image name="T1099" condition="begin with">C:\Users</Image> <!--Look for timestomping in user area, usually nothing should be doing that here-->
+		    <Image name="T1099" condition="begin with">C:\Users</Image> <!--Look for timestomping in user area, usually nothing should be doing that here-->
 			<TargetFilename name="T1099" condition="end with">.exe</TargetFilename> <!--Look for backdated executables anywhere-->
 			<Image name="T1099" condition="begin with">\Device\HarddiskVolumeShadowCopy</Image> <!--Nothing should be written here | Credit: @SBousseaden [ https://twitter.com/SBousseaden/status/1133030955407630336 ] -->
 		</FileCreateTime>
 	</RuleGroup>
 
+
 	<RuleGroup name="" groupRelation="or">
 		<FileCreateTime onmatch="exclude">
 			<Image condition="image">OneDrive.exe</Image> <!--OneDrive constantly changes file times-->
 			<Image condition="image">C:\Windows\system32\backgroundTaskHost.exe</Image>
-			<Image condition="contains">setup</Image> <!--Ignore setups-->
-			<Image condition="contains">install</Image> <!--Ignore setups-->
-			<Image condition="contains">Update\</Image> <!--Ignore setups-->
 			<Image condition="end with">redist.exe</Image> <!--Ignore setups-->
 			<Image condition="is">msiexec.exe</Image> <!--Ignore setups-->
-			<Image condition="is">TrustedInstaller.exe</Image> <!--Ignore setups-->
 			<TargetFilename condition="contains">\NVIDIA\NvBackend\ApplicationOntology\</TargetFilename> <!--NVIDIA GeForce Experience Application Ontology, 1000's of events in user profile-->
 		</FileCreateTime>
 	</RuleGroup>
@@ -275,12 +267,12 @@
             <DestinationPort name="Splunk" condition="is">8000</DestinationPort> <!--HTTP(s): Monitor Splunk Traffic-->
             <!--Ports: Proxy-->
             <DestinationPort name="Proxy" condition="is">8080</DestinationPort> <!--Socks proxy port | Credit @ion-storm-->
-        </NetworkConnect>
+		</NetworkConnect>
 	</RuleGroup>
 
 	<RuleGroup name="" groupRelation="or">
 		<NetworkConnect onmatch="exclude">
-            <!--SECTION: Microsoft-->
+			<!--SECTION: Microsoft-->
             <Image condition="begin with">C:\ProgramData\Microsoft\Windows Defender\Platform\</Image>
             <Image condition="end with">AppData\Local\Microsoft\Teams\current\Teams.exe</Image> <!--Microsoft: Teams-->
             <DestinationHostname condition="end with">.microsoft.com</DestinationHostname> <!--Microsoft:Update delivery-->
@@ -297,6 +289,8 @@
 
 	<!--SYSMON EVENT ID 4 : RESERVED FOR SYSMON SERVICE STATUS MESSAGES-->
 	<!--SYSMON EVENT ID 5 : PROCESS ENDED [ProcessTerminate]-->
+
+		<!--DATA: UtcTime, ProcessGuid, ProcessId, Image-->
 	<RuleGroup name="" groupRelation="or">
 		<ProcessTerminate onmatch="include">
             <Image condition="begin with">C:\Users</Image> <!--Process terminations by user binaries-->
@@ -310,6 +304,7 @@
 	</RuleGroup>
 
 	<!--SYSMON EVENT ID 6 : DRIVER LOADED INTO KERNEL [DriverLoad]-->
+		<!--DATA: UtcTime, ImageLoaded, Hashes, Signed, Signature, SignatureStatus-->
 	<RuleGroup name="" groupRelation="or">
 		<DriverLoad onmatch="exclude">
             <Signature condition="contains">microsoft</Signature> <!--Exclude signed Microsoft drivers-->
@@ -319,6 +314,7 @@
 	</RuleGroup>
 
 	<!--SYSMON EVENT ID 7 : DLL (IMAGE) LOADED BY PROCESS [ImageLoad]-->
+		<!--DATA: UtcTime, ProcessGuid, ProcessId, Image, ImageLoaded, Hashes, Signed, Signature, SignatureStatus-->
 	<RuleGroup name="" groupRelation="or">
 		<ImageLoad onmatch="include">
 			<!--NOTE: Using "include" with no rules means nothing in this section will be logged-->
@@ -326,9 +322,9 @@
 	</RuleGroup>
 
 	<!--SYSMON EVENT ID 8 : REMOTE THREAD CREATED [CreateRemoteThread]-->
+		<!--DATA: UtcTime, SourceProcessGuid, SourceProcessId, SourceImage, TargetProcessId, TargetImage, NewThreadId, StartAddress, StartModule, StartFunction-->
 	<RuleGroup name="" groupRelation="or">
 		<CreateRemoteThread onmatch="exclude">
-			<!--COMMENT: Exclude mostly-safe sources and log anything else.-->
 			<!--COMMENT: Exclude mostly-safe sources and log anything else.-->
 			<SourceImage condition="is">C:\Windows\system32\wbem\WmiPrvSE.exe</SourceImage>
 			<SourceImage condition="is">C:\Windows\system32\svchost.exe</SourceImage>
@@ -343,6 +339,7 @@
 	</RuleGroup>
 
 	<!--SYSMON EVENT ID 9 : RAW DISK ACCESS [RawAccessRead]-->
+		<!--DATA: UtcTime, ProcessGuid, ProcessId, Image, Device-->
 	<RuleGroup name="" groupRelation="or">
 		<RawAccessRead onmatch="include">
 			<!--NOTE: Using "include" with no rules means nothing in this section will be logged-->
@@ -350,6 +347,10 @@
 	</RuleGroup>
 
 	<!--SYSMON EVENT ID 10 : INTER-PROCESS ACCESS [ProcessAccess]-->
+		<!--COMMENT:	Can cause high system load, disabled by default.-->
+		<!--COMMENT:	Monitor for processes accessing other process' memory.-->
+
+		<!--DATA: UtcTime, SourceProcessGuid, SourceProcessId, SourceThreadId, SourceImage, TargetProcessGuid, TargetProcessId, TargetImage, GrantedAccess, CallTrace-->
 	<RuleGroup name="" groupRelation="or">
 		<ProcessAccess onmatch="include">
 			<!--NOTE: Using "include" with no rules means nothing in this section will be logged-->
@@ -357,6 +358,11 @@
 	</RuleGroup>
 
 	<!--SYSMON EVENT ID 11 : FILE CREATED [FileCreate]-->
+		<!--EVENT 11: "File created"-->
+		<!--NOTE:	Other filesystem "minifilters" can make it appear to Sysmon that some files are being written twice. This is not a Sysmon issue, per Mark Russinovich.-->
+		<!--NOTE:	You may not see files detected by antivirus. Other filesystem minifilters, like antivirus, can act before Sysmon receives the alert a file was written.-->
+
+		<!--DATA: UtcTime, ProcessGuid, ProcessId, Image, TargetFilename, CreationUtcTime-->
 	<RuleGroup name="" groupRelation="or">
 		<FileCreate onmatch="include">
 			<TargetFilename name="T1023" condition="contains">\Start Menu</TargetFilename> <!--Windows: Startup links and shortcut modification [ https://attack.mitre.org/wiki/Technique/T1023 ] -->
@@ -441,6 +447,10 @@
 	</RuleGroup>
 
 	<!--SYSMON EVENT ID 12 & 13 & 14 : REGISTRY MODIFICATION [RegistryEvent]-->
+		<!--EVENT 12: "Registry object added or deleted"-->
+		<!--EVENT 13: "Registry value set"-->
+		<!--EVENT 14: "Registry objected renamed"-->
+		<!--DATA: EventType, UtcTime, ProcessGuid, ProcessId, Image, TargetObject, Details (can't filter on), NewName (can't filter on)-->
 	<RuleGroup name="" groupRelation="or">
 		<RegistryEvent onmatch="include">
 			<!--Autorun or Startups-->
@@ -659,8 +669,11 @@
 	</RuleGroup>
 
 	<!--SYSMON EVENT ID 15 : ALTERNATE DATA STREAM CREATED [FileCreateStreamHash]-->
+
+		<!--DATA: UtcTime, ProcessGuid, ProcessId, Image, TargetFilename, CreationUtcTime, Hash-->
 		<FileCreateStreamHash onmatch="include">
 			<TargetFilename condition="contains">Downloads</TargetFilename> <!--Downloaded files. Does not include "Run" files in IE-->
+			<TargetFilename condition="contains">Desktop</TargetFilename> <!--Downloaded files. Does not include "Run" files in IE-->
 			<TargetFilename condition="contains">Temp\7z</TargetFilename> <!--7zip extractions-->
 			<TargetFilename condition="contains">Startup</TargetFilename> <!--ADS startup | Example: [ https://www.hybrid-analysis.com/sample/a314f6106633fba4b70f9d6ddbee452e8f8f44a72117749c21243dc93c7ed3ac?environmentId=100 ] -->
 			<TargetFilename condition="end with">.bat</TargetFilename> <!--Batch scripting-->
@@ -679,6 +692,7 @@
 			<TargetFilename condition="end with">.vbs</TargetFilename> <!--VisualBasicScripting files-->
 			<TargetFilename condition="end with">.wsc</TargetFilename> <!--Scripting | Credit @bartblaze -->
 			<TargetFilename condition="end with">.wsf</TargetFilename> <!--Scripting | Credit @bartblaze -->
+			<TargetFilename condition="end with">.pdf</TargetFilename> <!--Scripting | Credit @bartblaze -->
 		</FileCreateStreamHash>
 
 	<RuleGroup name="" groupRelation="or">
@@ -686,25 +700,38 @@
 		</FileCreateStreamHash>
 	</RuleGroup>
 
-    <!--SYSMON EVENT ID 16 : SYSMON CONFIGURATION CHANGE-->
-        <!--EVENT 16: "Sysmon config state changed"-->
-    <!--SYSMON EVENT ID 17 & 18 : PIPE CREATED / PIPE CONNECTED [PipeEvent]-->
-        <!--EVENT 17: "Pipe Created"-->
-        <!--EVENT 18: "Pipe Connected"-->
-        <!--ADDITIONAL REFERENCE: [ https://www.cobaltstrike.com/help-smb-beacon ] -->
-        <!--ADDITIONAL REFERENCE: [ https://blog.cobaltstrike.com/2015/10/07/named-pipe-pivoting/ ] -->
-        <!--DATA: UtcTime, ProcessGuid, ProcessId, PipeName, Image-->
+	<!--SYSMON EVENT ID 16 : SYSMON CONFIGURATION CHANGE-->
+		<!--EVENT 16: "Sysmon config state changed"-->
+		<!--COMMENT:	This ONLY logs if the hash of the configuration changes. Running "sysmon.exe -c" with the current configuration will not be logged with Event 16-->
+		
+		<!--DATA: UtcTime, Configuration, ConfigurationFileHash-->
+		<!--Cannot be filtered.-->
+
+	<!--SYSMON EVENT ID 17 & 18 : PIPE CREATED / PIPE CONNECTED [PipeEvent]-->
+		<!--EVENT 17: "Pipe Created"-->
+		<!--EVENT 18: "Pipe Connected"-->
+
+		<!--ADDITIONAL REFERENCE: [ https://www.cobaltstrike.com/help-smb-beacon ] -->
+		<!--ADDITIONAL REFERENCE: [ https://blog.cobaltstrike.com/2015/10/07/named-pipe-pivoting/ ] -->
+
+		<!--DATA: UtcTime, ProcessGuid, ProcessId, PipeName, Image-->
 	<RuleGroup name="" groupRelation="or">
 		<PipeEvent onmatch="exclude">
-			<!--NOTE: Using incide with no rules means nothing in this section will be logged-->
-            <!-- the standard named pipes used by Windows services (we want only the ones that begin with these names) -->
-            <PipeName condition="is">\scerpc</PipeName>
+		    <PipeName condition="is">\scerpc</PipeName>
             <PipeName condition="is">\ntsvcs</PipeName>
             <PipeName condition="is">\wkssvc</PipeName>
 		</PipeEvent>
 	</RuleGroup>
 
 	<!--SYSMON EVENT ID 19 & 20 & 21 : WMI EVENT MONITORING [WmiEvent]-->
+		<!--EVENT 19: "WmiEventFilter activity detected"-->
+		<!--EVENT 20: "WmiEventConsumer activity detected"-->
+		<!--EVENT 21: "WmiEventConsumerToFilter activity detected"-->
+
+		<!--ADDITIONAL REFERENCE: [ https://www.darkoperator.com/blog/2017/10/15/sysinternals-sysmon-610-tracking-of-permanent-wmi-events ] -->
+		<!--ADDITIONAL REFERENCE: [ https://rawsec.lu/blog/posts/2017/Sep/19/sysmon-v610-vs-wmi-persistence/ ] -->
+
+		<!--DATA: EventType, UtcTime, Operation, User, Name, Type, Destination, Consumer, Filter-->
 	<RuleGroup name="" groupRelation="or">
 		<WmiEvent onmatch="exclude">
 			<!--NOTE: Using exclude with no rules means everything will be logged-->
@@ -712,10 +739,12 @@
 	</RuleGroup>
 
 	<!--SYSMON EVENT ID 22 : DNS QUERY [DnsQuery]-->
+		<!--EVENT 22: "Dns query"-->
+
+		<!--DATA: RuleName, UtcTime, ProcessGuid, ProcessId, QueryName, QueryType, QueryStatus, QueryResults (can't filter on)-->
 
 	<RuleGroup name="" groupRelation="or">
 		<DnsQuery onmatch="exclude">
-			<!--Network noise-->
 			<QueryName condition="end with">.arpa.</QueryName> <!--Design decision to not log reverse DNS lookups. You will need to decide.-->
 			<QueryName condition="end with">.arpa</QueryName> <!--Design decision to not log reverse DNS lookups. You will need to decide.-->
 			<QueryName condition="end with">.msftncsi.com</QueryName> <!--Microsoft proxy detection | Microsoft default exclusion-->
@@ -932,33 +961,35 @@
 			<QueryName condition="end with">ocsp.identrust.com</QueryName>
 			<QueryName condition="is">status.rapidssl.com</QueryName>
 			<QueryName condition="is">status.thawte.com</QueryName>
-			<QueryName condition="is">ocsp.int-x3.letsencrypt.org</QueryName>
-			<QueryName condition="end with">.google.com</QueryName>
-			<QueryName condition="is">www.youtube.com</QueryName>
-			<QueryName condition="is">grafana.com</QueryName>
-			<QueryName condition="end with">.twitch.tv</QueryName>
-			<QueryName condition="is">twitch.tv</QueryName>
-			<QueryName condition="end with">.microsoft.com</QueryName>
-			<QueryName condition="end with">.malwarebytes.com</QueryName>
 		</DnsQuery>
 	</RuleGroup>
-    	<!--SYSMON EVENT ID 24 : CLIPBOARD EVENT MONITORING [ClipboardChange]-->
+
+	<!--SYSMON EVENT ID 23 : FILE DELETE [FileDelete]-->
+		<!--EVENT 22: "File Delete"-->
+		<!--COMMENT:	Sandbox usage. When a program signals to Windows a file should be deleted or wiped, Sysmon may be able to capture it. 
+			[ https://isc.sans.edu/forums/diary/Sysmon+and+File+Deletion/26084/ ]
+		-->
+
+		<!--DATA: RuleName, UtcTime, ProcessGuid, ProcessId, User, Image, TargetFilename, Hashes, IsExecutable, Archived -->
+
+
+	<RuleGroup name="" groupRelation="or">
+		<FileDelete onmatch="include">
+		</FileDelete>
+	</RuleGroup>
+
+
+	<!--SYSMON EVENT ID 24 : CLIPBOARD EVENT MONITORING [ClipboardChange]-->
 		<!--EVENT 24: "Clipboard changed"-->
 		<!--COMMENT:	Sandbox usage.  Sysmon can capture the contents of clipboard events.
 			An  example of what could be a production usage on restricted desktops is provided below, but it is commented-out. -->
 			
 		<!--DATA: EventType, UtcTime, ProcessGuid, ProcessId, Image, Session, ClientInfo, Hashes, Archived -->
 
-
 	<RuleGroup name="" groupRelation="or">
-		<ClipboardChange onmatch="include">
-			<Image condition="end with">wscript.exe</Image>
-			<Image condition="end with">cscript.exe</Image>
-			<Image condition="end with">powershell.exe</Image>
-			<Image condition="end with">rdpclip.exe</Image>
+		<ClipboardChange onmatch="exclude">
 		</ClipboardChange>
 	</RuleGroup>
-
 
 	<!--SYSMON EVENT ID 25 : PROCESS TAMPERING [ProcessTampering]-->
 		<!--EVENT 25: "Process Tampering"-->
@@ -967,6 +998,7 @@
 			[ https://medium.com/falconforce/sysmon-13-process-tampering-detection-820366138a6c ] -->
 		
 		<!--DATA: EventType, RuleName, UtcTime, ProcessGuid, ProcessId, Image, Type -->
+	
 
 	<RuleGroup name="" groupRelation="or">
 		<ProcessTampering onmatch="exclude">
@@ -974,11 +1006,15 @@
 		</ProcessTampering>
 	</RuleGroup>
 
-
-		<!--SYSMON EVENT ID 255 : ERROR-->
+	<RuleGroup name="" groupRelation="or">
+		<FileDeleteDetected onmatch="exclude">
+		</FileDeleteDetected>
+	</RuleGroup>
+	<!--SYSMON EVENT ID 255 : ERROR-->
 		<!--"This event is generated when an error occurred within Sysmon. They can happen if the system is under heavy load
 			and certain tasked could not be performed or a bug exists in the Sysmon service. You can report any bugs on the
 			Sysinternals forum or over Twitter (@markrussinovich)."-->
 		<!--Cannot be filtered.-->
+
 	</EventFiltering>
 </Sysmon>

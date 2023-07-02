@@ -3,10 +3,10 @@
 ### File List:
 ||- Version - |
 |:--|:-:|
-|[Sysmon](https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon) | 13.32 | 
+|[Sysmon](https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon) | 15.00 | 
+|Sysmon Config | 4.90 | 
 |[WinLogBeats](https://www.elastic.co/downloads/beats/winlogbeat) | 7.13.4 | 
-|[Security Onion](https://github.com/Security-Onion-Solutions/securityonion/blob/master/VERIFY_ISO.md) | 2.3.90 |
-|Splunk | TBC  |
+|[Security Onion](https://github.com/Security-Onion-Solutions/securityonion/blob/master/VERIFY_ISO.md) | 2.3.240 |
 
 
 ### Instructions To Install
@@ -32,6 +32,7 @@
 
 
 ### References:
+- [M-M-Adams Config](https://github.com/m-m-adams/sysmonconfig)
 - [Config Data 1 - GitHub - SwiftOnSecurity](https://github.com/SwiftOnSecurity/sysmon-config "Too Big......")
 - [Config Data 3 - Github - olafhartong](https://github.com/olafhartong/sysmon-modular "It's Pronounced, M0dddular")
 - [Config Data 2 - GitHub - Neo23x0](https://github.com/Jonesckevin/sysmon-config "This guy Sigma's")

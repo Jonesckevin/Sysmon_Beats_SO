@@ -872,6 +872,10 @@ Sysmon's output paths are now 'friendly names' as of version 6. E.g. HKLM, and H
     <QueryName condition="is">status.rapidssl.com</QueryName>
     <QueryName condition="is">status.thawte.com</QueryName>
     <QueryName condition="is">ocsp.int-x3.letsencrypt.org</QueryName>
+
+    			<!--Game-->
+	  <QueryName condition="end with">discord.com</QueryName>
+	  <QueryName condition="end with">steam.com</QueryName>
 		</DnsQuery>
 	</RuleGroup>
 
